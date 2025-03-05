@@ -17,7 +17,7 @@ Converts MAC addresses into a manufacturer using Wireshark's OUI database.
 See README.md.
 
 """
-from __future__ import print_function
+
 from collections import namedtuple
 import argparse
 import re
@@ -26,8 +26,8 @@ import io
 
 allow_update = True
 try:
-    from urllib2 import urlopen
-    from urllib2 import URLError
+    from urllib.request import urlopen
+    from urllib.error import URLError
 except ImportError:
     try:
         from urllib.request import urlopen
@@ -37,7 +37,7 @@ except ImportError:
         pass
 
 try:
-    from StringIO import StringIO
+    from io import StringIO
 except ImportError:
     from io import StringIO
 

@@ -4,7 +4,7 @@
 import os
 import sys
 import logging
-from ConfigParser import NoOptionError
+from configparser import NoOptionError
 
 # Add script directory to the PYTHONPATH so we can import our modules (only if run from SecureCRT)
 if 'crt' in globals():

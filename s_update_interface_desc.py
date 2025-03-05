@@ -147,7 +147,7 @@ def script_main(session, prompt_check_mode=True, check_mode=True, enable_pass=No
     rollback = []
 
     # Get an alphabetically sorted list of interfaces
-    intf_list = sorted(description_data.keys(), key=utilities.human_sort_key)
+    intf_list = sorted(list(description_data.keys()), key=utilities.human_sort_key)
 
     # Generate a list of configuration commands (and rollback if necessary)
     for interface in intf_list:

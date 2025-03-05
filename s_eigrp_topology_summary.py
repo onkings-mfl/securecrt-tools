@@ -89,8 +89,8 @@ def script_main(session, ask_vrf=True, vrf=None):
 
     detailed_results = process_topology(fsm_results)
 
-    for process, nexthops in detailed_results.iteritems():
-        nexthop_list = sorted(nexthops.keys(), key=utilities.human_sort_key)
+    for process, nexthops in detailed_results.items():
+        nexthop_list = sorted(list(nexthops.keys()), key=utilities.human_sort_key)
         vrf = process[0]
         as_num = process[1]
         rid = process[2]
@@ -134,7 +134,7 @@ def process_topology(topology_list):
         nexthop = entry['NEXTHOP']
         network = "{0}/{1}".format(entry['NETWORK'], entry['MASK'])
 
-        if details in processed_results.keys():
+        if details in list(processed_results.keys()):
             if nexthop in processed_results[details]:
                 processed_results[details][nexthop].append(network)
             else:

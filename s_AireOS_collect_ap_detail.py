@@ -98,7 +98,7 @@ def get_ap_detail(session, to_cvs=False):
             # start with an empty change_dict_entry
             change_dict_entry = {}
             # step across each key
-            for this_key in this_dict_entry.keys():
+            for this_key in list(this_dict_entry.keys()):
                 # don't change the primary key name .. for the key:value entry
                 if this_key == in_send_cmd_key: change_dict_entry[this_key] = this_dict_entry[this_key]
                 # for the rest of the keys, add the suffix .. for the key:value entry
@@ -158,7 +158,7 @@ def get_ap_detail(session, to_cvs=False):
         key_list = []
         # first collect up the unique keys by stepping across each dict
         for ap_dict_entry in ap_list_of_dict:
-            for this_key in ap_dict_entry.keys():
+            for this_key in list(ap_dict_entry.keys()):
                 if this_key not in key_list: key_list.append(this_key)
         # next sort the resulting key list
         key_list.sort()

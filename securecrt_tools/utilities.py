@@ -78,7 +78,7 @@ def textfsm_parse_to_dict(input_data, template_filename):
     # Combine the header row with each entry in fsm_list to create a dictionary representation.  Add to output list.
     output = []
     for entry in fsm_list:
-        dict_entry = dict(zip(header_list, entry))
+        dict_entry = dict(list(zip(header_list, entry)))
         output.append(dict_entry)
 
     logger.debug("Converted all sub-lists to dicts.  Size is {0}".format(len(output)))
@@ -278,8 +278,8 @@ def expand_number_range(num_string):
             if item.count('-') != 1:
                 raise ValueError("Invalid range: '{0]'".format(item))
             else:
-                start, end = map(int, item.split('-'))
-                output_list.extend(range(start, end+1))
+                start, end = list(map(int, item.split('-')))
+                output_list.extend(list(range(start, end+1)))
         else:
             output_list.append(int(item))
     return output_list
