@@ -102,14 +102,12 @@ def list_of_lists_to_csv(data, filename):
     """
     # Validate path before creating file.
     logger.debug("Opening file {0} for writing".format(filename))
-    with open(filename, 'wb') as output_csv:
-        # Binary mode required ('wb') to prevent Windows from adding linefeeds after each line.
+    with open(filename, 'w', encoding='utf-8', newline='') as output_csv:
         csv_out = csv.writer(output_csv)
         for line in data:
             logger.debug("Writing row: '{0}'".format(line))
-            # Convert every string on the list to utf-8, skipping attempt if value is None
-            encoded_line = [str(x).encode('utf-8', 'ignore') if x else None for x in line]
-            csv_out.writerow(encoded_line)
+            # Convert each value to string if needed; don't encode it.
+            csv_out.writerow([str(x) if x is not None else '' for x in line])
     logger.debug("Completed writing to file {0}".format(filename))
 
 

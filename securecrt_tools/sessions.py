@@ -801,7 +801,7 @@ class CRTSession(Session):
                             # Strip line endings from line.  Also re-encode line as ASCII
                             # and ignore the character if it can't be done (rare error on
                             # Nexus)
-                            newfile.write(nextline.strip('\r\n').encode('ascii', 'ignore') + "\n")
+                            newfile.write(nextline.strip('\r\n').encode('ascii', 'ignore') + b"\n")
                             self.logger.debug("<WRITE_FILE> Writing Line: {0}".format(nextline.strip('\r\n')
                                                                                       .encode('ascii', 'ignore')))
                     elif self.screen.MatchIndex > 4:
