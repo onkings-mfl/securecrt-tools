@@ -296,7 +296,7 @@ def get_arp_info(script):
     """
 
     arp_filename = script.file_open_dialog("Please select the ARP file to use when looking up MAC addresses.", "Open",
-                                           "CSV Files (*.csv)|*.csv||")
+                                           "", "CSV Files (*.csv)|*.csv|All Files (*.*)|*.*||")
     if arp_filename == "":
         return {}
 
