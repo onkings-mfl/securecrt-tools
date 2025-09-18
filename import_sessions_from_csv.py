@@ -115,7 +115,7 @@ def script_main(script):
 # ################################################  SCRIPT LAUNCH   ###################################################
 
 # If this script is run from SecureCRT directly, use the SecureCRT specific class
-if __name__ == "__builtin__":
+if __name__ == "builtins":
     crt_script = scripts.CRTScript(crt)
     script_main(crt_script)
 

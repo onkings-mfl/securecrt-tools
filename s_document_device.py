@@ -4,7 +4,7 @@
 import os
 import sys
 import logging
-from ConfigParser import NoOptionError
+from configparser import NoOptionError
 
 # Add script directory to the PYTHONPATH so we can import our modules (only if run from SecureCRT)
 if 'crt' in globals():
@@ -169,7 +169,7 @@ def script_main(session):
 # ################################################  SCRIPT LAUNCH   ###################################################
 
 # If this script is run from SecureCRT directly, use the SecureCRT specific class
-if __name__ == "__builtin__":
+if __name__ == "builtins":
     # Initialize script object
     crt_script = scripts.CRTScript(crt)
     # Get session object for the SecureCRT tab that the script was launched from.

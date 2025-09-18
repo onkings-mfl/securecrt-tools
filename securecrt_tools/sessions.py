@@ -28,8 +28,8 @@ import logging
 import time
 import re
 from abc import ABCMeta, abstractmethod
-from message_box_const import *
-from utilities import path_safe_name
+from .message_box_const import *
+from .utilities import path_safe_name
 
 # ################################################    EXCEPTIONS     ###################################################
 
@@ -51,13 +51,12 @@ class UnsupportedOSError(Exception):
 # ##############################################    SESSION TYPES     ##################################################
 
 
-class Session:
+class Session(metaclass=ABCMeta):
     """
     This is a base class for the other Session types.  This class simply exists to enforce the required methods any
     sub-classes have to implement.  There are also a couple methods that are common to all sessions so they are defined
     under this class and automatically inherited by the sub-classes.
     """
-    __metaclass__ = ABCMeta
 
     def __init__(self):
         self.script = None
@@ -472,7 +471,7 @@ class CRTSession(Session):
                         re_sysName = re.compile(re_sysName_exp)
                         sysName = re_sysName.search(nextline)
                         if sysName:
-                            self.hostname = sysName.group(1).strip(u"\r\n\b ")
+                            self.hostname = sysName.group(1).strip("\r\n\b ")
                 elif self.screen.MatchIndex > 4:
                     # If we get a --More-- send a space character
                     self.screen.Send(" ")
@@ -632,7 +631,7 @@ class CRTSession(Session):
             attempts += 1
             self.logger.debug("<CONNECT> Attempt {0}: Prompt result = {1}".format(attempts, result))
 
-        prompt = result.strip(u"\r\n\b ")
+        prompt = result.strip("\r\n\b ")
         if prompt == '':
             self.logger.debug("<GET PROMPT> Prompt discovery failed.  Raising exception.")
             raise InteractionError("Unable to discover device prompt")
@@ -802,7 +801,7 @@ class CRTSession(Session):
                             # Strip line endings from line.  Also re-encode line as ASCII
                             # and ignore the character if it can't be done (rare error on
                             # Nexus)
-                            newfile.write(nextline.strip('\r\n').encode('ascii', 'ignore') + "\n")
+                            newfile.write(nextline.strip('\r\n').encode('ascii', 'ignore') + b"\n")
                             self.logger.debug("<WRITE_FILE> Writing Line: {0}".format(nextline.strip('\r\n')
                                                                                       .encode('ascii', 'ignore')))
                     elif self.screen.MatchIndex > 4:
@@ -811,7 +810,7 @@ class CRTSession(Session):
                     else:
                         raise InteractionError("Timeout trying to capture output")
 
-        except IOError, err:
+        except IOError as err:
             error_str = "IO Error for:\n{0}\n\n{1}".format(filename, err)
             self.script.message_box(error_str, "IO Error", ICON_STOP)
 
@@ -926,7 +925,7 @@ class DebugSession(Session):
         valid_response = ["yes", "no"]
         response = ""
         while response.lower() not in valid_response:
-            response = raw_input("Is this device already connected?({0}): ".format(str(valid_response)))
+            response = input("Is this device already connected?({0}): ".format(str(valid_response)))
 
         if response.lower() == "yes":
             self.logger.debug("<INIT> Assuming session is already connected")
@@ -951,14 +950,14 @@ class DebugSession(Session):
         :param command: The command to be issued to the remote device to disconnect.  The default is 'exit'
         :type command: str
         """
-        print "Pretending to disconnect from device {0}.".format(self.hostname)
+        print("Pretending to disconnect from device {0}.".format(self.hostname))
         self._connected = False
 
     def close(self):
         """
         A method to close the SecureCRT tab associated with this CRTSession.  Does nothing but print to the console.
         """
-        print "Closing tab."
+        print("Closing tab.")
 
     def start_cisco_session(self, enable_pass=None):
         """
@@ -980,7 +979,7 @@ class DebugSession(Session):
             raise InteractionError("Session is not connected.  Cannot start Cisco session.")
 
         # Get prompt (and thus hostname) from device
-        provided_hostname = raw_input("What hostname should be used for this device (leave blank for 'DebugHost'): ")
+        provided_hostname = input("What hostname should be used for this device (leave blank for 'DebugHost'): ")
         if provided_hostname:
             self.hostname = provided_hostname
             self.prompt = "{0}#".format(provided_hostname)
@@ -993,7 +992,7 @@ class DebugSession(Session):
         valid_os = ["AireOS", "IOS", "IOS-XR", "NXOS", "ASA"]
         response = ""
         while response not in valid_os:
-            response = raw_input("Select OS ({0}): ".format(str(valid_os)))
+            response = input("Select OS ({0}): ".format(str(valid_os)))
         self.logger.debug("<INIT> Setting OS to {0}".format(response))
         self.os = response
 
@@ -1038,11 +1037,11 @@ class DebugSession(Session):
         """
         input_filename = ""
         while not os.path.isfile(input_filename):
-            input_filename = raw_input("Path to file with output from '{0}' ('q' to quit): ".format(command))
+            input_filename = input("Path to file with output from '{0}' ('q' to quit): ".format(command))
             if input_filename == 'q':
                 exit(0)
             elif not os.path.isfile(input_filename):
-                print "Invalid File, please try again..."
+                print("Invalid File, please try again...")
 
         with open(input_filename, 'r') as input_file:
             input_data = input_file.readlines()
@@ -1060,7 +1059,7 @@ class DebugSession(Session):
                     newfile.write(line.strip('\r\n').encode('ascii', 'ignore') + "\r\n")
                     self.logger.debug("<WRITE OUTPUT> Writing Line: {0}".format(line.strip('\r\n')
                                                                                 .encode('ascii', 'ignore')))
-        except IOError, err:
+        except IOError as err:
             error_str = "IO Error for:\n{0}\n\n{1}".format(filename, err)
             self.script.message_box(error_str, "IO Error", ICON_STOP)
 
@@ -1139,4 +1138,4 @@ class DebugSession(Session):
         configuration.  Only prints to the console.
         """
         self.logger.debug("<SAVE> Simulating Saving configuration on remote device.")
-        print "Saved config."
+        print("Saved config.")

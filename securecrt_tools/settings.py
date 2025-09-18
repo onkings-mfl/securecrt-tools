@@ -1,4 +1,4 @@
-import ConfigParser
+import configparser
 import os
 
 
@@ -13,11 +13,11 @@ class SettingsImporter:
         default_settings_filename = "default_settings.ini"
         settings_dir = os.path.dirname(__file__)
         self.default_filename = os.path.join(settings_dir, default_settings_filename)
-        self.defaults = ConfigParser.RawConfigParser()
+        self.defaults = configparser.RawConfigParser()
         self.defaults.read(self.default_filename)
 
         # Load custom settings
-        self.config = ConfigParser.RawConfigParser()
+        self.config = configparser.RawConfigParser()
         if not os.path.isfile(self.settings_file):
             if create:
                 settings_dir = os.path.dirname(self.settings_file)
@@ -58,7 +58,7 @@ class SettingsImporter:
         This does not remove any additions that may have been added to the user's configuration file.
         """
         # Create a new collection of settings, based on the defaults
-        new_settings = ConfigParser.RawConfigParser()
+        new_settings = configparser.RawConfigParser()
         new_settings.read(self.default_filename)
 
         # Loop through all the current settings and add values to the new settings as needed.
@@ -149,4 +149,4 @@ class SettingsImporter:
         # Get the raw string from the settings file.
         raw_setting = self.config.get(section, setting)
         # Split the raw string on the comma, and save each item as an entry into the list, while removing
-        return filter(None, map(lambda x: x.strip(), raw_setting.split(',')))
+        return [_f for _f in [x.strip() for x in raw_setting.split(',')] if _f]

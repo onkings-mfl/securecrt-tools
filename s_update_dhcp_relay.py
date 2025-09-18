@@ -165,7 +165,7 @@ def build_valid_ip_list(text_ip_list):
     ip_list = []
     for text_ip in text_ip_list:
         try:
-            ip_list.append(str(ipaddress.ip_address(unicode(text_ip))))
+            ip_list.append(str(ipaddress.ip_address(str(text_ip))))
         except ipaddress.AddressValueError:
             raise ipaddress.AddressValueError("{0} is not a valid IPv4 or IPv6 address.  Please check your "
                                               "settings.ini file.".format(text_ip))
@@ -262,7 +262,7 @@ def script_main(session):
 # ################################################  SCRIPT LAUNCH   ###################################################
 
 # If this script is run from SecureCRT directly, use the SecureCRT specific class
-if __name__ == "__builtin__":
+if __name__ == "builtins":
     # Initialize script object
     crt_script = scripts.CRTScript(crt)
     # Get session object for the SecureCRT tab that the script was launched from.

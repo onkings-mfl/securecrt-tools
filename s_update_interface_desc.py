@@ -147,7 +147,7 @@ def script_main(session, prompt_check_mode=True, check_mode=True, enable_pass=No
     rollback = []
 
     # Get an alphabetically sorted list of interfaces
-    intf_list = sorted(description_data.keys(), key=utilities.human_sort_key)
+    intf_list = sorted(list(description_data.keys()), key=utilities.human_sort_key)
 
     # Generate a list of configuration commands (and rollback if necessary)
     for interface in intf_list:
@@ -292,7 +292,7 @@ def add_port_channels(desc_data, pc_data):
 # ################################################  SCRIPT LAUNCH   ###################################################
 
 # If this script is run from SecureCRT directly, use the SecureCRT specific class
-if __name__ == "__builtin__":
+if __name__ == "builtins":
     # Initialize script object
     crt_script = scripts.CRTScript(crt)
     # Get session object for the SecureCRT tab that the script was launched from.

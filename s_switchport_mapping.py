@@ -89,7 +89,7 @@ def script_main(session):
         state = intf_entry[2]
         # Get interface description, if one exists
         desc = None
-        if intf in desc_table.keys():
+        if intf in list(desc_table.keys()):
             desc = desc_table[intf]
 
         duplex = ""
@@ -111,7 +111,7 @@ def script_main(session):
             ip = None
             fqdn = None
             mac_vendor = None
-            if intf in arp_lookup.keys():
+            if intf in list(arp_lookup.keys()):
                 arp_list = arp_lookup[intf]
                 for entry in arp_list:
                     mac, ip = entry
@@ -130,13 +130,13 @@ def script_main(session):
                 output.append(output_line)
 
         # Record all information for L2 ports
-        elif intf in mac_table.keys():
+        elif intf in list(mac_table.keys()):
             for mac_entry in mac_table[intf]:
                 mac, vlan = mac_entry
                 ip = None
                 fqdn = None
                 mac_vendor = None
-                if mac and mac_entry in arp_lookup.keys():
+                if mac and mac_entry in list(arp_lookup.keys()):
                     ip = arp_lookup[(mac, vlan)]
                     if dns_lookup and ip:
                         try:
@@ -286,10 +286,10 @@ def get_arp_info(script):
     """
     A function that reads in the "show ip arp" CSV file that should be taken from the default gateway device for the
     switch being port mapped, so we can fill in the correct IP addresses for each device.
-    
+
     :param script: The script object that represents this script being executed
     :type script: scripts.Script
-    
+
     :return: A dictionary that can be used to lookup both the MAC and IP associated with an interface, or the IP and
         VLAN associated with a MAC address.
         
@@ -341,7 +341,7 @@ def mac_to_vendor(mac_lookup_table, mac):
 # ################################################  SCRIPT LAUNCH   ###################################################
 
 # If this script is run from SecureCRT directly, use the SecureCRT specific class
-if __name__ == "__builtin__":
+if __name__ == "builtins":
     # Initialize script object
     crt_script = scripts.CRTScript(crt)
     # Get session object for the SecureCRT tab that the script was launched from.

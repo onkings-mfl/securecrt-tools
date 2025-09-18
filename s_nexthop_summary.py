@@ -159,14 +159,14 @@ def parse_routes(fsm_routes):
         new_entry = {}
 
         logger.debug("Processing route entry: {0}".format(str(route)))
-        new_entry['network'] = ipaddress.ip_network(u"{0}/{1}".format(route['NETWORK'], route['MASK']))
+        new_entry['network'] = ipaddress.ip_network("{0}/{1}".format(route['NETWORK'], route['MASK']))
 
         new_entry['protocol'] = utilities.normalize_protocol(route['PROTOCOL'])
 
         if route['NEXTHOP_IP'] == '':
             new_entry['nexthop'] = None
         else:
-            new_entry['nexthop'] = ipaddress.ip_address(unicode(route['NEXTHOP_IP']))
+            new_entry['nexthop'] = ipaddress.ip_address(str(route['NEXTHOP_IP']))
 
         if route["NEXTHOP_IF"] == '':
             new_entry['interface'] = None
@@ -241,7 +241,7 @@ def nexthop_summary(textfsm_dict):
             if nexthop not in summary_table:
                 # Create an entry for this next-hop, containing zero count for all protocols.
                 summary_table[nexthop] = {}
-                summary_table[nexthop].update(zip(proto_list, [0] * len(proto_list)))
+                summary_table[nexthop].update(list(zip(proto_list, [0] * len(proto_list))))
                 summary_table[nexthop]['interface'] = entry['interface']
             # Increment total and protocol specific count
             summary_table[nexthop][entry['protocol']] += 1
@@ -256,7 +256,7 @@ def nexthop_summary(textfsm_dict):
     header = ["Nexthop", "Interface", "Total"]
     header.extend(proto_list[2:])
     output.append(header)
-    summary_keys = sorted(summary_table.keys(), key=utilities.human_sort_key)
+    summary_keys = sorted(list(summary_table.keys()), key=utilities.human_sort_key)
     for key in summary_keys:
         line = [key]
         for column in proto_list:
@@ -268,7 +268,7 @@ def nexthop_summary(textfsm_dict):
     output.append([])
     output.append(["Connected:"])
     output.append(["Interface", "Network(s)"])
-    connected_keys = sorted(connected_table.keys(), key=utilities.human_sort_key)
+    connected_keys = sorted(list(connected_table.keys()), key=utilities.human_sort_key)
     for key in connected_keys:
         line = [key]
         for network in connected_table[key]:
@@ -280,7 +280,7 @@ def nexthop_summary(textfsm_dict):
     output.append([])
     output.append(["Route Details"])
     output.append(["Nexthop", "Network", "Protocol"])
-    detailed_keys = sorted(detailed_table.keys(), key=utilities.human_sort_key)
+    detailed_keys = sorted(list(detailed_table.keys()), key=utilities.human_sort_key)
     for key in detailed_keys:
         for network in detailed_table[key]:
             line = [key]
@@ -297,7 +297,7 @@ def nexthop_summary(textfsm_dict):
 # ################################################  SCRIPT LAUNCH   ###################################################
 
 # If this script is run from SecureCRT directly, use the SecureCRT specific class
-if __name__ == "__builtin__":
+if __name__ == "builtins":
     # Initialize script object
     crt_script = scripts.CRTScript(crt)
     # Get session object for the SecureCRT tab that the script was launched from.

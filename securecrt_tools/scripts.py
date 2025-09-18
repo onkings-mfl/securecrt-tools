@@ -12,9 +12,9 @@ import datetime
 import csv
 import getpass
 from abc import ABCMeta, abstractmethod
-import sessions
-from settings import SettingsImporter
-from message_box_const import *
+from . import sessions
+from .settings import SettingsImporter
+from .message_box_const import *
 
 
 # ################################################    EXCEPTIONS     ###################################################
@@ -35,7 +35,7 @@ class ConnectError(Exception):
 
 # ################################################    APP  CLASSES    ##################################################
 
-class Script:
+class Script(metaclass=ABCMeta):
     """
     This is a base class for the script object.  This class cannot be used directly, but is instead a blueprint that
     enforces what any sub-classes must implement.  The reason for using this design (base class with sub-classes) is
@@ -74,7 +74,6 @@ class Script:
     prints the message to the console.  In this way, a call to this method will work either way the script is called
     as long as the correct Script sub-class is being used (and the template are already written to do this).
     """
-    __metaclass__ = ABCMeta
 
     def __init__(self, script_path):
         # Initialize application attributes
@@ -912,9 +911,9 @@ class DebugScript(Script):
         :type prompt_endings: list
         """
         if version == 2 or version == 1:
-            print "Pretending to log into device {0} with username {1} using SSH{2}.".format(host, username, version)
+            print("Pretending to log into device {0} with username {1} using SSH{2}.".format(host, username, version))
         else:
-            print "Pretending to log into device {0} with username {1} using SSH2.".format(host, username)
+            print("Pretending to log into device {0} with username {1} using SSH2.".format(host, username))
         self.main_session.hostname = host
         self.main_session.prompt = host + "#"
         self.main_session._connected = True
@@ -939,7 +938,7 @@ class DebugScript(Script):
                                type of device (for example "$" for some linux hosts).
         :type prompt_endings: list
         """
-        print "Pretending to log into device {0} with username {1} using TELNET.".format(host, username)
+        print("Pretending to log into device {0} with username {1} using TELNET.".format(host, username))
         self.main_session.hostname = host
         self.main_session.prompt = host + "#"
         self.main_session._connected = True
@@ -968,12 +967,12 @@ class DebugScript(Script):
         :type prompt_endings: list
         """
         if proxy:
-            print "Using session '{}' as a proxy."
+            print("Using session '{}' as a proxy.")
 
         if not protocol:
-            print "Pretending to log into device {0} with username {1} using ANY.".format(host, username, protocol)
+            print("Pretending to log into device {0} with username {1} using ANY.".format(host, username, protocol))
         else:
-            print "Pretending to log into device {0} with username {1} using {2}.".format(host, username, protocol)
+            print("Pretending to log into device {0} with username {1} using {2}.".format(host, username, protocol))
         self.main_session._connected = True
 
     def disconnect(self, command="exit"):
@@ -1032,10 +1031,10 @@ class DebugScript(Script):
                    BUTTON_YESNOCANCEL: ["Yes", "No", "Cancel"], BUTTON_YESNO: ["Yes", "No"],
                    BUTTON_RETRYCANCEL: ["Retry", "Cancel"]}
 
-        print "{0}: {1}".format(message, title)
+        print("{0}: {1}".format(message, title))
         response = ""
         while response not in buttons[layout]:
-            response = raw_input("Choose from {0}: ".format(buttons[layout]))
+            response = input("Choose from {0}: ".format(buttons[layout]))
             self.logger.debug("<MESSAGEBOX> Received: {0}".format(response))
 
         code = get_response_code(response)
@@ -1063,7 +1062,7 @@ class DebugScript(Script):
             result = getpass.getpass(message)
             self.logger.debug("<PROMPT> Captures hidden result (likely a password)".format(result))
         else:
-            result = raw_input("{0}: ".format(message))
+            result = input("{0}: ".format(message))
             self.logger.debug("<PROMPT> Captures prompt results: '{0}'".format(result))
 
         return result
@@ -1089,7 +1088,7 @@ class DebugScript(Script):
         :return: The absolute path to the file that was selected
         :rtype: str
         """
-        result_filename = raw_input("{0} (type {0}): ".format(title, file_filter))
+        result_filename = input("{0} (type {0}): ".format(title, file_filter))
         return result_filename
 
     def ssh_in_new_tab(self, host, username, password, prompt_endings=("#", ">")):
@@ -1126,6 +1125,6 @@ class DebugScript(Script):
         :param folder: The folder (starting from the configured Sessions folder) where this session should be saved.
         :type folder: str
         """
-        print "Pretending to save session {0} with hostname: {1}, protocol: {2}, under folder: {3}"\
-              .format(session_name, ip, protocol, folder)
+        print("Pretending to save session {0} with hostname: {1}, protocol: {2}, under folder: {3}"\
+              .format(session_name, ip, protocol, folder))
 

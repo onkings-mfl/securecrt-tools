@@ -78,7 +78,7 @@ def textfsm_parse_to_dict(input_data, template_filename):
     # Combine the header row with each entry in fsm_list to create a dictionary representation.  Add to output list.
     output = []
     for entry in fsm_list:
-        dict_entry = dict(zip(header_list, entry))
+        dict_entry = dict(list(zip(header_list, entry)))
         output.append(dict_entry)
 
     logger.debug("Converted all sub-lists to dicts.  Size is {0}".format(len(output)))
@@ -102,14 +102,12 @@ def list_of_lists_to_csv(data, filename):
     """
     # Validate path before creating file.
     logger.debug("Opening file {0} for writing".format(filename))
-    with open(filename, 'wb') as output_csv:
-        # Binary mode required ('wb') to prevent Windows from adding linefeeds after each line.
+    with open(filename, 'w', encoding='utf-8', newline='') as output_csv:
         csv_out = csv.writer(output_csv)
         for line in data:
             logger.debug("Writing row: '{0}'".format(line))
-            # Convert every string on the list to utf-8, skipping attempt if value is None
-            encoded_line = [str(x).encode('utf-8', 'ignore') if x else None for x in line]
-            csv_out.writerow(encoded_line)
+            # Convert each value to string if needed; don't encode it.
+            csv_out.writerow([str(x) if x is not None else '' for x in line])
     logger.debug("Completed writing to file {0}".format(filename))
 
 
@@ -278,8 +276,8 @@ def expand_number_range(num_string):
             if item.count('-') != 1:
                 raise ValueError("Invalid range: '{0]'".format(item))
             else:
-                start, end = map(int, item.split('-'))
-                output_list.extend(range(start, end+1))
+                start, end = list(map(int, item.split('-')))
+                output_list.extend(list(range(start, end+1)))
         else:
             output_list.append(int(item))
     return output_list
