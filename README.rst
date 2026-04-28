@@ -1,20 +1,56 @@
 Introduction
 ==================
-This repository contains a collection of SecureCRT scripts that automate various tasks, primarily around interacting with Cisco routers and switches.
+SecureCRT Tools is a collection of Python scripts for automating common Cisco network-device workflows from SecureCRT.
+The scripts can collect show-command output, turn common tables into CSV files, create saved sessions, and handle a few
+targeted operational workflows such as packet captures and configuration updates.
 
-These scripts should work on any version of SecureCRT that supports python.  If you find that a script won't work on your machine, please post an issue to let us know!
+This fork is aimed at SecureCRT 9.x users.  The current validation target is SecureCRT 9.7.2 x64 build 3858 with Python
+3.13.4 64-bit.  Other SecureCRT versions may work, but test in your environment before relying on a script in
+production, especially when it changes configuration or starts a packet capture.
 
-Note on SecureCRT 9.x
+SecureCRT 9.x Support
 =====================
-Earlier versions of this README warned that SecureCRT 9.x was not working with these scripts because of changes to the bundled Python interpreter.  That note is now stale.  Most scripts have been tested successfully with SecureCRT 9.x and later using Python 3.14.3.
+Older copies of this README warned that SecureCRT 9.x did not work with these scripts because of changes to SecureCRT's
+bundled Python interpreter.  That warning is no longer accurate for this fork.
 
-Not every script and workflow has been exhaustively validated across every SecureCRT/Python/platform combination, so config-changing scripts and new SecureCRT-facing changes should still be tested carefully before production use.  If you find a script that does not work in SecureCRT 9.x or later, please post an issue with the SecureCRT version, Python version, script name, and error details.
+That does not mean every script has been tested across every SecureCRT, Python, platform, and device combination.  If
+something fails, please include the SecureCRT version, Python version, script name, device platform, and error details.
 
-Important Note For Users of Older Versions
-==========================================
-The settings files for these scripts have been changed from using JSON files to the Python built-in ConfigParse module.  In addition instead of each script uses indivdiual settings having its own JSON file, now that settings are saved in the common "settings.ini" file under a separate heading for that script.  **There is no code to migrate your settings from the old JSON format to the INI format, so please check your settings and remove the old JSON files**
+What's New In This Fork
+=======================
+This fork keeps the original SecureCRT Tools workflow and adds updates focused on SecureCRT 9.x, day-to-day switch
+operations, and a few stale-data fixes.
 
-In addition to the new format for the settings, the newer version of these scripts now have support for initiating connections via Telnet and SSH to remote devices, as well as connecting via a jump/bastion host.  In addition there are methods for pushing configuration changes to devices that were not available previously.
+New scripts:
+
+* ``s_cisco_packet_capture.py`` runs a guided Cisco IOS/IOS XE Embedded Packet Capture workflow.  It asks for the
+  capture name, interface, runtime, buffer size, local storage, and export method, then can leave the PCAP on the device
+  or copy it out with SCP, FTP, SFTP, or TFTP.
+* ``s_interface_age_csv.py`` combines ``show interfaces link`` and ``show interfaces status`` into an
+  ``interface-age`` CSV report, which is useful when reviewing how long ports have been up or down.
+* ``s_device_track_csv.py`` exports IOS device-tracking data to CSV.  It tries modern
+  ``show device-tracking database`` output first and falls back to legacy ``show ip device tracking all`` output when
+  needed.
+
+Updates and fixes:
+
+* SecureCRT 9.x support has been refreshed around SecureCRT 9.7.2 and Python 3.13.4.
+* A new global ``response_timeout`` setting controls SecureCRT screen reads and command-response waits.
+* Packet capture prompts now enforce configured runtime and buffer limits, warn on risky interface choices, and support
+  optional command transcripts.
+* Packet capture cleanup behavior is configurable, and command-echo waits now time out instead of hanging indefinitely.
+* The bundled MAC/OUI vendor database in ``securecrt_tools/manuf`` has been refreshed.
+* ``securecrt_tools/manuf.py`` now downloads updates from Wireshark's current automated ``manuf`` file and handles the
+  padded columns used by the current file format.
+
+Upgrade Notes
+=============
+Very old versions of SecureCRT Tools used per-script JSON settings files.  Current versions use one INI file at
+``settings/settings.ini``.  There is no automatic migration from the old JSON layout, so review your settings and remove
+or archive old JSON settings files before running the current scripts.
+
+The current framework can initiate SSH and Telnet connections for multi-device scripts, use a SecureCRT saved session as
+a jumpbox/proxy, and run a small number of configuration-changing workflows.
 
 If you are looking for previous versions of the scripts, they can be found in the branches below:
 
@@ -23,19 +59,21 @@ If you are looking for previous versions of the scripts, they can be found in th
 
 What These Scripts Do
 =====================
-While the documentation has a detailed list of every script in this collection and the specifics on how they work, below is a summarized list of the kinds of things these scripts will do.
+The documentation has the full script list, but these are the main things the repository is built for:
 
-* Save command outputs from devices into files that are automatically named with the hostname of the device (from the prompt) and a time/date stamp.  There are some different versions depending on if you want a single output or multiple outputs and from one or multiple devices.
+* Save command output from one device or many devices into hostname- and timestamp-based files.
 * Capture device inventory data (code version, model number, serial number, mfg. date, etc.) for a list of devices provided to the script in CSV format.
-* Write the detailed CDP neighbor information into a spreadsheet (CSV format) for easier viewing and re-use of the data.
-* Creation of SecureCRT sessions from the CDP information of a device, to quickly build your collection of sessions in SecureCRT's session manager.
-* Summarize the route table of a device to see a list of all next-hops found in the route table and how many routes from which routing protocols are sending routes to each next-hop.  This script is useful either as a validate tool after routing changes (see a summary of route behavior before and after the change), or to help with discovery of new devices (There are 4000 routes in the table, but are there 3 or 30 exits that packets can take?)
-* Write the ARP table for a device into a spreadsheet (CSV) file, either for manual lookups or to be leveraged by other scripts (see below).  There is also version that will build a single large ARP table from multiple devices (For when HSRP priorities are split across 2 cores, or multiple VRFs route different VLANs upstream).
-* Create a spreadsheet that maps out every device on the switch, including interface description, MAC Address, MAC Vendor and IP address.  This script uses the ARP table created above as input if you want MAC to IP mappings shown in the output.
-* Capture the interface stats from all interfaces on a device into a spreadsheet to more quickly see which ports have errors, high rates of traffic, etc.
-* Search devices for specific existing IP helper/DHCP relay addresses and add new relays (optionally remove old) on any interface where the current relays are found.  There are versions of this script for working with a single device or a list of devices.
+* Export ARP, MAC address, VLAN, CDP, EIGRP, interface status, interface age, device-tracking, and switchport mapping data to CSV.
+* Create SecureCRT saved sessions from CDP data or from a CSV file.
+* Map switchports to attached MAC addresses, IP addresses, DNS names, and MAC vendors.
+* Summarize route-table next-hop usage before or after routing changes.
+* Run Cisco IOS/IOS XE packet captures and export PCAP files.
+* Search devices for existing IP helper/DHCP relay addresses and add or remove relays where needed.
 
-These various scripts are included in the repository so that someone can quickly download them and get started, but majority of the work has been put into building the `securecrt_tools` module which is designed to handle all of the low-level interactions with SecureCRT and make it as easy as possible to write new scripts.  This module handles discovering the remote device OS, its prompt and hostname, and the interactions with the device.  For example a single method call can send a command, collect the output and write it to a file named after the device.  This way a script should be able to gather the output needed in a few lines of code and anything beyond that is the processing required to parse that output (TextFSM makes this much easier) and take the appropriate follow up steps.  All of this is discussed in more detail in the "Writing Your Own Scripts" sectin of the documentation.
+Most of the reusable work lives in the ``securecrt_tools`` package.  It handles settings, output directories, SecureCRT
+dialogs, session setup, prompt and hostname detection, command collection, TextFSM parsing, CSV writing, and output
+filename creation.  That lets the individual scripts stay focused on the network task instead of repeating SecureCRT API
+plumbing.
 
 Using a Jumpbox/Bastion Host
 ============================
@@ -110,11 +148,14 @@ Global settings that are used by all scripts are under the `Global` heading in t
 * '**debug_mode**': True or False.  If True, a log file will be written that contains debug messages from the script execution.  This can be helpful for troubleshooting scripts that are failing.  The debug files will be saved in a `debugs` directory under your configured output directory.
 * '**use_proxy**': True or False.  If True, scripts that initiate connections (multi-device scripts) will use the `proxy_session` option below to specify which SecureCRT Session to use as a SOCKS proxy.  When enabled, this option uses the `Firewall` setting in the SecureCRT sessions settings to specify the device to proxy the connection through.
 * '**proxy_session**': The name of the SecureCRT session that should be used to proxy connections.  This **MUST** be a session that uses SSH2.  Use the forward slash (/) to specify folders in the path to the session, i.e. `proxy_session = Site 1/Core/S1_Core1`.
+* '**response_timeout**': Timeout in seconds for SecureCRT screen reads and command-response waits.
 
 Script-Specific Settings
 ************************
 
 Some scripts have settings that are used to change certain behaviors while running.  If such a settings are used, the setting will be saved under a heading named for the script in the `settings.ini` file.  Details about the settings used by a script are described in the documentation for that script, or in the docstring in the script file itself.
+
+The ``[cisco_packet_capture]`` section controls the packet capture workflow.  It includes runtime limits, buffer-size limits, interface warning behavior, transcript logging, capture cleanup behavior, and whether to delete the local PCAP after a successful remote copy.
 
 Contributing
 ============
