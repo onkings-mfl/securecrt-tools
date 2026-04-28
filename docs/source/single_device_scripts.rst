@@ -23,6 +23,7 @@ These scripts can also be imported into Multi-Device scripts to reduce the amoun
    s_document_device
    s_eigrp_topology_summary
    s_eigrp_topology_to_csv
+   s_interface_age_csv
    s_interface_stats
    s_mac_to_csv
    s_nexthop_summary
