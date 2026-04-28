@@ -739,6 +739,7 @@ def script_main(session):
     * | **min_buffer_size_mb** - Minimum allowed capture buffer.
     * | **max_buffer_size_mb** - Maximum allowed capture buffer.
     * | **warn_on_risky_interface** - Warn before attempting logical or platform-sensitive interface names.
+    * | **transcript_enabled** - Write a command transcript to ScriptOutput.
     * | **cleanup_capture_on_exit** - Remove capture configuration automatically after export instead of prompting.
     * | **prompt_delete_local_pcap** - Prompt to delete local PCAP after a remote copy.
     * | **delete_local_pcap_after_remote_copy** - Delete local PCAP automatically after a remote copy.
@@ -761,8 +762,9 @@ def script_main(session):
         session.validate_os(["IOS"])
 
         capture_name = prompt_capture_name(script)
-        transcript = session.create_output_filename("packet-capture-{0}-transcript".format(capture_name))
-        write_transcript(transcript, "Cisco packet capture transcript for {0}\n".format(session.hostname))
+        if get_setting_bool(script, "transcript_enabled", False):
+            transcript = session.create_output_filename("packet-capture-{0}-transcript".format(capture_name))
+            write_transcript(transcript, "Cisco packet capture transcript for {0}\n".format(session.hostname))
 
         interface = prompt_interface(session, transcript=transcript)
         runtime = choose_runtime(script)
@@ -806,8 +808,11 @@ def script_main(session):
             if confirm_delete_local_file(session):
                 delete_local_file(session, local_file, transcript=transcript)
 
-        script.message_box("Packet capture workflow completed.\n\nTranscript:\n{0}".format(transcript),
-                           "Packet Capture", ICON_INFO)
+        if transcript:
+            complete_message = "Packet capture workflow completed.\n\nTranscript:\n{0}".format(transcript)
+        else:
+            complete_message = "Packet capture workflow completed."
+        script.message_box(complete_message, "Packet Capture", ICON_INFO)
 
     except ScriptAbort:
         had_error = True

@@ -6,7 +6,9 @@ These scripts should work on any version of SecureCRT that supports python.  If 
 
 Note on SecureCRT 9.x
 =====================
-SecureCRT 9.x has changed they way that the python interpreter is bundled with the software.  It seems these scripts do not work with SecureCRT 9.x at this time.  There is an open issue tracking the problem, but I'll need to find some time to try out the newer version and discover what has changed and how to fix it.  No ETA at this time due to time constraints.
+Earlier versions of this README warned that SecureCRT 9.x was not working with these scripts because of changes to the bundled Python interpreter.  That note is now stale.  Most scripts have been tested successfully with SecureCRT 9.x and later using Python 3.14.3.
+
+Not every script and workflow has been exhaustively validated across every SecureCRT/Python/platform combination, so config-changing scripts and new SecureCRT-facing changes should still be tested carefully before production use.  If you find a script that does not work in SecureCRT 9.x or later, please post an issue with the SecureCRT version, Python version, script name, and error details.
 
 Important Note For Users of Older Versions
 ==========================================
