@@ -18,6 +18,7 @@ These scripts can also be imported into Multi-Device scripts to reduce the amoun
    s_AireOS_collect_wlan_detail
    s_arp_to_csv
    s_cdp_to_csv
+   s_cisco_packet_capture
    s_create_sessions_from_cdp
    s_document_device
    s_eigrp_topology_summary
