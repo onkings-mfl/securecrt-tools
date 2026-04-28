@@ -38,8 +38,8 @@ class DeviceTrackingDisabledError(Exception):
 def script_main(session):
     """
     | SINGLE device script
-    | Author: Jamie Caesar
-    | Email: jcaesar@presidio.com
+    | Author: Daniel L
+    | Email: lenisd29@gmail.com
 
     This script will capture the device tracking table from a Cisco IOS device and output the results as a CSV file.
 

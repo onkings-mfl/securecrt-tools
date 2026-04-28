@@ -28,8 +28,8 @@ logger.debug("Starting execution of {0}".format(script_name))
 def script_main(session):
     """
     | SINGLE device script
-    | Author: Jamie Caesar
-    | Email: jcaesar@presidio.com
+    | Author: Daniel L
+    | Email: lenisd29@gmail.com
 
     This script will grab interface link age information and interface status information from a Cisco IOS device,
     merge the results by port, and export the combined data to a CSV file.
