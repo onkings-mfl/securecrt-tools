@@ -380,7 +380,17 @@ def choose_runtime(script):
     minimum = get_setting_int(script, "min_runtime_seconds", 5)
     maximum = get_setting_int(script, "max_runtime_seconds", 300)
 
-    return prompt_int(script, "Enter capture runtime in seconds:", "Runtime", default, minimum, maximum)
+    return prompt_int(
+        script,
+        "Enter how long the packet capture should run, in seconds.\n"
+        "Allowed range: {0} seconds minimum, {1} seconds maximum. \n"
+        "Press Enter to use the default of {2} seconds."
+        .format(minimum, maximum, default),
+        "Runtime",
+        default,
+        minimum,
+        maximum
+    )
 
 
 def confirm_cleanup(session, had_error):
