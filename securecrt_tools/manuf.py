@@ -61,7 +61,7 @@ class MacParser(object):
         IOError: If manuf file could not be found.
 
     """
-    MANUF_URL = "https://code.wireshark.org/review/gitweb?p=wireshark.git;a=blob_plain;f=manuf"
+    MANUF_URL = "https://www.wireshark.org/download/automated/data/manuf"
 
     def  __init__(self, manuf_name="manuf", update=False):
         self._manuf_name = manuf_name
@@ -91,7 +91,7 @@ class MacParser(object):
         for line in manuf_file:
             com = line.split("#", 1)
             if com[0].strip():
-                arr = com[0].strip().split('\t')
+                arr = [field.strip() for field in com[0].strip().split('\t')]
             else:
                 arr = ''
 
@@ -145,13 +145,13 @@ class MacParser(object):
             raise URLError("Failed downloading OUI database")
 
         # Parse the response
-        if response.code is 200:
+        if response.getcode() == 200:
             with open(manuf_name, "wb") as write_file:
                 write_file.write(response.read())
             if refresh:
                 self.refresh(manuf_name)
         else:
-            err = "{0} {1}".format(response.code, response.msg)
+            err = "{0} {1}".format(response.getcode(), response.msg)
             raise URLError("Failed downloading database: {0}".format(err))
 
         response.close()

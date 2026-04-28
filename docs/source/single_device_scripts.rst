@@ -20,6 +20,7 @@ These scripts can also be imported into Multi-Device scripts to reduce the amoun
    s_cdp_to_csv
    s_cisco_packet_capture
    s_create_sessions_from_cdp
+   s_device_track_csv
    s_document_device
    s_eigrp_topology_summary
    s_eigrp_topology_to_csv
