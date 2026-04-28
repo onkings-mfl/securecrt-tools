@@ -433,6 +433,8 @@ def send_interactive(session, command, timeout, prompt_actions, success_markers=
     screen = session.screen
     screen.Send(command + "\n")
     write_transcript(transcript, "\n# {0}\n".format(command))
+    if not screen.WaitForString(command.strip(), getattr(session, "response_timeout", timeout)):
+        raise sessions.InteractionError("Timed out waiting for sent command to be echoed back to us.")
 
     steps = 0
     while steps < max_steps:
