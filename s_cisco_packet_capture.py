@@ -385,10 +385,10 @@ def confirm_cleanup(session, had_error):
     if had_error:
         return True
 
-    if get_setting_bool(script, "cleanup_capture_on_exit", True):
+    if get_setting_bool(script, "cleanup_capture_on_exit", False):
         return True
 
-    result = script.message_box("Remove packet-capture configuration from the device now?",
+    result = script.message_box("Clear captured packets and remove packet-capture configuration from the device now?",
                                 "Cleanup Capture", ICON_QUESTION + BUTTON_YESNO + DEFBUTTON1)
     return result == IDYES
 
@@ -464,6 +464,22 @@ def send_interactive(session, command, timeout, prompt_actions, success_markers=
             )
 
     raise PacketCaptureError("Safety limit reached while handling interactive command:\n\n{0}".format(command))
+
+
+def run_confirmed_command(session, command, transcript=None, timeout=30):
+    prompt_actions = {
+        "[confirm]": "\n",
+        "[clear]?[confirm]": "\n",
+        "[clear]? [confirm]": "\n",
+        "clear]?[confirm]": "\n",
+        "clear]? [confirm]": "\n",
+        "confirm": "\n",
+    }
+
+    send_interactive(session, command, timeout, prompt_actions,
+                     error_markers=[],
+                     transcript=transcript,
+                     max_steps=10)
 
 
 def export_named_capture(session, capture_name, local_file, transcript=None):
@@ -567,8 +583,8 @@ def setup_named_capture(session, capture_name, interface, buffer_size, runtime, 
     export_needed = True
 
     run_cleanup_command(session, "monitor capture {0} stop".format(capture_name), transcript=transcript)
-    run_cleanup_command(session, "monitor capture {0} clear".format(capture_name), transcript=transcript)
-    run_cleanup_command(session, "no monitor capture {0}".format(capture_name), transcript=transcript)
+    clear_named_capture(session, capture_name, transcript=transcript)
+    run_confirmed_cleanup(session, "no monitor capture {0}".format(capture_name), transcript=transcript)
 
     run_command(session, "monitor capture {0} interface {1} both".format(capture_name, interface),
                 transcript=transcript)
@@ -617,11 +633,28 @@ def setup_traditional_capture(session, capture_name, interface, buffer_size, tra
     return buffer_name, point_name
 
 
+def clear_named_capture(session, capture_name, transcript=None):
+    try:
+        run_confirmed_command(session, "monitor capture {0} clear".format(capture_name), transcript=transcript)
+    except PacketCaptureError as err:
+        logger.debug("<PACKET_CAPTURE> Capture clear failed but cleanup will continue: {0}".format(err))
+        write_transcript(transcript, "\n# Cleanup warning for monitor capture {0} clear\n{1}\n"
+                         .format(capture_name, err))
+
+
+def run_confirmed_cleanup(session, command, transcript=None):
+    try:
+        run_confirmed_command(session, command, transcript=transcript)
+    except PacketCaptureError as err:
+        logger.debug("<PACKET_CAPTURE> Confirmed cleanup command failed but cleanup will continue: {0}".format(err))
+        write_transcript(transcript, "\n# Cleanup warning for {0}\n{1}\n".format(command, err))
+
+
 def cleanup_named_capture(session, capture_name, remove_capture, transcript=None):
     run_cleanup_command(session, "monitor capture {0} stop".format(capture_name), transcript=transcript)
     if remove_capture:
-        run_cleanup_command(session, "monitor capture {0} clear".format(capture_name), transcript=transcript)
-        run_cleanup_command(session, "no monitor capture {0}".format(capture_name), transcript=transcript)
+        clear_named_capture(session, capture_name, transcript=transcript)
+        run_confirmed_cleanup(session, "no monitor capture {0}".format(capture_name), transcript=transcript)
 
 
 def cleanup_traditional_capture(session, buffer_name, point_name, interface, remove_capture, transcript=None):
@@ -691,7 +724,7 @@ def script_main(session):
     * | **min_buffer_size_mb** - Minimum allowed capture buffer.
     * | **max_buffer_size_mb** - Maximum allowed capture buffer.
     * | **warn_on_risky_interface** - Warn before attempting logical or platform-sensitive interface names.
-    * | **cleanup_capture_on_exit** - Remove capture configuration automatically after export.
+    * | **cleanup_capture_on_exit** - Remove capture configuration automatically after export instead of prompting.
     * | **prompt_delete_local_pcap** - Prompt to delete local PCAP after a remote copy.
     * | **delete_local_pcap_after_remote_copy** - Delete local PCAP automatically after a remote copy.
 
