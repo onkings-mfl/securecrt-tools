@@ -352,7 +352,10 @@ def choose_buffer(session, storage, free_mb):
     while True:
         buffer_size = prompt_int(
             script,
-            "Available space on {0}: {1} MB\n\nEnter buffer size in MB:".format(storage, free_mb),
+            "Available space on {0}: {1} MB\n\n"
+            "Enter the capture buffer size in MB.\n"
+            "Allowed range: {2} MB minimum, {3} MB maximum. Press Enter to use the default of {4} MB."
+            .format(storage, free_mb, minimum, maximum, default),
             "Buffer Size",
             default,
             minimum,
