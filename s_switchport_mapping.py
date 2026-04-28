@@ -75,7 +75,11 @@ def script_main(session):
 
     # Read in MAC manufacturer database, if everything imported properly
     if mac_lookup:
-        mac_lookup_table = manuf.MacParser(script_dir + "/securecrt_tools/manuf")
+        try:
+            mac_lookup_table = manuf.MacParser(os.path.join(script_dir, "securecrt_tools", "manuf"))
+        except (IOError, ValueError) as err:
+            logger.debug("Unable to load MAC manufacturer database: {0}".format(err))
+            mac_lookup_table = None
     else:
         mac_lookup_table = None
 
@@ -115,7 +119,7 @@ def script_main(session):
                 arp_list = arp_lookup[intf]
                 for entry in arp_list:
                     mac, ip = entry
-                    if mac and mac_lookup:
+                    if mac and mac_lookup_table:
                         mac_vendor = mac_to_vendor(mac_lookup_table, mac)
                     if dns_lookup and ip:
                         try:
@@ -143,7 +147,7 @@ def script_main(session):
                             fqdn, _, _, = socket.gethostbyaddr(ip)
                         except socket.herror:
                             pass
-                if mac and mac_lookup:
+                if mac and mac_lookup_table:
                     mac_vendor = mac_to_vendor(mac_lookup_table, mac)
                 output_line = [intf, state, mac, mac_vendor, fqdn, ip, vlan, desc, speed, duplex, intf_type]
                 output.append(output_line)
@@ -296,29 +300,41 @@ def get_arp_info(script):
     """
 
     arp_filename = script.file_open_dialog("Please select the ARP file to use when looking up MAC addresses.", "Open",
-                                           "CSV Files (*.csv)|*.csv||")
+                                           "", "CSV Files (*.csv)|*.csv||")
     if arp_filename == "":
         return {}
 
-    with open(arp_filename, 'r') as arp_file:
+    with open(arp_filename, 'r', encoding='utf-8', newline='') as arp_file:
         arp_csv = csv.reader(arp_file)
         arp_list = [x for x in arp_csv]
 
     arp_lookup = {}
+    if not arp_list:
+        return arp_lookup
+
+    header = [x.strip().lower() for x in arp_list[0]]
     # Process all ARP entries AFTER the header row.
     for entry in arp_list[1:]:
+        if len(entry) < 4:
+            logger.debug("Skipping malformed ARP CSV row: {0}".format(entry))
+            continue
+
         # Get the IP address
-        ip = entry[0]
+        ip = entry[0].strip()
         # Get the MAC address.  If 'Incomplete', skip entry
-        mac = entry[2]
-        if mac.lower() == 'incomplete':
+        mac = entry[2].strip()
+        if not ip or not mac or mac.lower() == 'incomplete':
             continue
         # Get the VLAN, if SVI is specified.
-        intf = utilities.long_int_name(entry[3])
-        if intf.lower().startswith('vlan'):
-            vlan = intf[4:]
+        if len(header) > 3 and header[3] == "vlan":
+            vlan = entry[3].strip()
+            intf = "Vlan{0}".format(vlan)
         else:
-            vlan = None
+            intf = utilities.long_int_name(entry[3].strip())
+            if intf.lower().startswith('vlan'):
+                vlan = intf[4:]
+            else:
+                vlan = None
 
         if intf in list(arp_lookup.keys()):
             arp_lookup[intf].append((mac, ip))
